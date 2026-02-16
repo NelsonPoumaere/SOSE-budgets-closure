@@ -10,7 +10,7 @@ mass: # finite-volume mass budget in units of kg/s
         var: null
         product:
           var: null
-          thickness_tendency: "SSH_TEND_3D"
+          thickness_tendency: "SSH_TEND_3D" # Thickness tendency precomputed from SSH snapshots
           density: 1035.
           area: "rA"
   rhs:
@@ -49,7 +49,7 @@ mass: # finite-volume mass budget in units of kg/s
             var: null
             sum:
               var: null
-              vertical_convergence: "DELTA_WMASSTRANS"
+              vertical_convergence: "DELTA_WMASSTRANS" # Vertical divergence pre-computed (but could be implemented in xWMB)
       surface_exchange_flux:
         var: null
         product:
@@ -68,7 +68,7 @@ heat: # finite-volume heat budget in units of J s-1
         var: null
         product:
           var: null
-          tracer_concentration_tendency: "TEMP_TEND" 
+          tracer_concentration_tendency: "TEMP_TEND" # Computed from temperature and SSH snapshots (need to account for z* stretching)
           specific_heat_capacity: 3992.
           density: 1035.
           area: "rA"
@@ -81,20 +81,13 @@ heat: # finite-volume heat budget in units of J s-1
             var: null
             sum:
               var: null
-              zonal_heat_convergence:
+              horizontal_heat_convergence:
                 var: null
                 product:
                   var: null
                   specific_heat_capacity: 3992.
                   density: 1035.
-                  zonal_temp_convergence: "DELTA_ADVx_TH"
-              meridional_heat_convergence:
-                var: null
-                product:
-                  var: null
-                  specific_heat_capacity: 3992.
-                  density: 1035.
-                  meridional_temp_convergence: "DELTA_ADVy_TH"
+                  horizontal_temp_convergence: "DELTA_ADVh_TH"
           vertical:
             var: null
             sum:
@@ -119,21 +112,13 @@ heat: # finite-volume heat budget in units of J s-1
             var: null
             sum:
               var: null
-              zonal_heat_convergence:
+              horizontal_heat_convergence:
                 var: null
                 product:
                   var: null
                   specific_heat_capacity: 3992.
                   density: 1035.
-                  zonal_temp_convergence: "DELTA_DFxE_TH"
-                  sign: -1.
-              meridional_heat_convergence:
-                var: null
-                product:
-                  var: null
-                  specific_heat_capacity: 3992.
-                  density: 1035.
-                  meridional_temp_convergence: "DELTA_DFyE_TH"
+                  horizontal_temp_convergence: "DELTA_DFhE_TH"
                   sign: -1.
           vertical:
             var: null
@@ -155,13 +140,13 @@ heat: # finite-volume heat budget in units of J s-1
             product:
               var: null
               area: "rA"
-              tracer_content_tendency_per_unit_area: "SBSFQSW" # precomputed
+              tracer_content_tendency_per_unit_area: "SBSFQSW" # 3D term, pre-computed from short-wave 2D diagnostic
           non_short_wave:
             var: null
             product:
               var: null
               area: "rA"
-              tracer_content_tendency_per_unit_area: "TFLUXmSW" # precomputed 
+              tracer_content_tendency_per_unit_area: "TFLUXmSW" # Already 3D-broadcasted (zero below surface layer) 
 
 salt: # finite-volume salt budget in units of kg(salt)/s
   lambda: "SALT"
@@ -174,8 +159,8 @@ salt: # finite-volume salt budget in units of kg(salt)/s
         var: null
         product:
           var: null
-          tracer_concentration_tendency: "SALIN_TEND" 
-          unit_conversion: 0.001 
+          tracer_concentration_tendency: "SALIN_TEND" # Computed from salinity and SSH snapshots (need to account for z* stretching)
+          g_to_kg: 0.001 
           density: 1035.
           area: "rA"
           thickness: "drC"
@@ -187,20 +172,13 @@ salt: # finite-volume salt budget in units of kg(salt)/s
             var: null
             sum:
               var: null
-              zonal_salt_convergence:
+              horizontal_salt_convergence:
                 var: null
                 product:
                   var: null
-                  unit_conversion: 0.001 
+                  g_to_kg: 0.001 
                   density: 1035.
-                  zonal_salinity_convergence: "DELTA_ADVx_SLT"
-              meridional_salt_convergence:
-                var: null
-                product:
-                  var: null
-                  unit_conversion: 0.001 
-                  density: 1035.
-                  meridional_salinity_convergence: "DELTA_ADVy_SLT"
+                  horizontal_salinity_convergence: "DELTA_ADVh_SLT"
           vertical:
             var: null
             sum:
@@ -209,7 +187,7 @@ salt: # finite-volume salt budget in units of kg(salt)/s
                 var: null
                 product:
                   var: null
-                  unit_conversion: 0.001 
+                  g_to_kg: 0.001 
                   density: 1035.
                   vertical_salinity_convergence: "DELTA_ADVr_SLT"
                   sign: -1.
@@ -225,21 +203,13 @@ salt: # finite-volume salt budget in units of kg(salt)/s
             var: null
             sum:
               var: null
-              zonal_salt_convergence:
+              horizontal_salt_convergence:
                 var: null
                 product:
                   var: null
-                  unit_conversion: 0.001
+                  g_to_kg: 0.001
                   density: 1035.
-                  zonal_salinity_convergence: "DELTA_DFxE_SLT"
-                  sign: -1.
-              meridional_salt_convergence:
-                var: null
-                product:
-                  var: null
-                  unit_conversion: 0.001
-                  density: 1035.
-                  meridional_salinity_convergence: "DELTA_DFyE_SLT"
+                  horizontal_salinity_convergence: "DELTA_DFhE_SLT"
                   sign: -1.
           vertical:
             var: null
@@ -249,7 +219,7 @@ salt: # finite-volume salt budget in units of kg(salt)/s
                 var: null
                 product:
                   var: null
-                  unit_conversion: 0.001
+                  g_to_kg: 0.001
                   density: 1035.
                   vertical_salinity_convergence: "DELTA_DFrI_SLT"
       surface_exchange_flux:
@@ -257,5 +227,5 @@ salt: # finite-volume salt budget in units of kg(salt)/s
         product:
           var: null
           area: "rA"
-          unit_conversion: 0.001
-          surface_salt_flux: "SFLUX"
+          g_to_kg: 0.001
+          surface_salt_flux: "SFLUX" # Already 3D-broadcasted (zero below surface layer)
